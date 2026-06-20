@@ -7,6 +7,12 @@ import java.awt.event.*;
 public class Login extends JFrame {
     // private Connection conn;
 
+    // identifiers for each 'page'
+    final static String card1 = "Pick Role to Login";
+    final static String card2 = "Login as Admin";
+    final static String card3 = "Login as Doctor";
+    final static String card4 = "Login as Receptionist";
+    // role currently unused really but important for later database integration
     static String role;
 
     public Login() {
@@ -20,47 +26,75 @@ public class Login extends JFrame {
          * e.printStackTrace();
          * }
          */
-        super("Login to Hospital Management System");
-        setLayout(new BorderLayout());
-        JLabel pickRole = new JLabel("Pick Role to Login");
-        pickRole.setFont(new Font("Dialog", Font.PLAIN, 72));
-        pickRole.setBorder(BorderFactory.createEmptyBorder(50, 0, 50, 0));
-        add(pickRole, BorderLayout.NORTH);
-        pickRole.setHorizontalAlignment(SwingConstants.CENTER);
+        super("Login to Hospital Management System"); // titles the Login JFrame
+        setLayout(new CardLayout()); // sets the JFrame's Content Pane to use CardLayout for swapping pages
 
-        JPanel loginGUI = LoginGuiInit();
-        add(loginGUI, BorderLayout.CENTER);
-        setSize(900, 900);
+        JPanel pickRolePage = pickRolePageInit(); // initialises the 'pick role to login as' page and adds it to frame
+                                                  // with the identifier card1
+        add(pickRolePage, card1);
 
+        JPanel AdminLogin = adminLoginInit(); // initialises the 'login as admin' page and adds it to frame with the
+                                              // identifier card2
+        add(AdminLogin, card2);
+
+        CardLayout c1 = (CardLayout) (this.getContentPane().getLayout()); // gets cardlayout of this frame
+        c1.show(this.getContentPane(), card1); // shows page identified by 'card1': 'pick a role to login as'
+
+        setSize(900, 900); // set size of frame and other standard formatting of jframe
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
-    private JPanel LoginGuiInit() {
+    // initialiser for 'pick role to login as' page
+    private JPanel pickRolePageInit() {
+        JPanel pickRolePage = new JPanel(new BorderLayout()); // creates panel for page to hold stuff
+        JLabel pickRole = TopLabel(card1); // sets a label at the top saying 'Pick Role to Login'
+
+        pickRolePage.add(pickRole, BorderLayout.NORTH); // adds to top of panel
+
+        JPanel loginGUI = LoginGui(); // creates additional grid panel for the buttons
+        pickRolePage.add(loginGUI, BorderLayout.CENTER); // adds to center of panel
+
+        return pickRolePage;
+    }
+
+    // initialiser for 'pick role to login as' page's login buttons
+    private JPanel LoginGui() {
         JPanel loginGUI = new JPanel(new BorderLayout());
+        // creates outer panel with borderlayout (just to add a little padding so the
+        // buttons dont stretch across the whole thing)
         loginGUI.setBorder(BorderFactory.createEmptyBorder(50, 200, 50, 200));
+        // adds the padding by setting an invisible border
 
+        // actual panel for the buttons (vgap 100 means there's space between the
+        // buttons)
         JPanel rolePanel = new JPanel(new GridLayout(3, 1, 0, 100));
-        JButton[] roleButtons = new JButton[3];
-        loginGUI.add(rolePanel, BorderLayout.CENTER);
+        JButton[] roleButtons = new JButton[3]; // init buttons
 
+        // listener for the 'pick role' buttons
         class RoleListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 int roleInt = Integer.valueOf(e.getActionCommand());
                 switch (roleInt) {
                     case 0:
-                        role = "AD";
+                        role = "AD"; // sets role for authenticating credentials with database
+
+                        // gets cardlayout of the outer frame
+                        CardLayout c1 = (CardLayout) (Login.this.getContentPane().getLayout());
+                        c1.show(Login.this.getContentPane(), card2); // switches active page to 'Login as Admin'
+
                         break;
                     case 1:
-                        role = "RC";
+                        role = "RC"; // sets role for authenticating credentials with database
                         break;
                     case 2:
-                        role = "DR";
+                        role = "DR"; // sets role for authenticating credentials with database
                         break;
                 }
             }
         }
 
+        // initialises the three buttons
         for (int i = 0; i < 3; i++) {
             switch (i) {
                 case 0:
@@ -73,15 +107,94 @@ public class Login extends JFrame {
                     roleButtons[2] = new JButton("Doctor");
                     break;
             }
-            roleButtons[i].setActionCommand(String.valueOf(i));
-            roleButtons[i].addActionListener(new RoleListener());
-            roleButtons[i].setFont(new Font("Dialog", Font.PLAIN, 48));
-            rolePanel.add(roleButtons[i]);
+            roleButtons[i].setActionCommand(String.valueOf(i)); // set identifier of buttons for switch/case
+            roleButtons[i].addActionListener(new RoleListener()); // set listener detailed above
+            roleButtons[i].setFont(new Font("Dialog", Font.PLAIN, 48)); // set font size to be bigger cuz default is
+                                                                        // tiny
+            rolePanel.add(roleButtons[i]); // add button to role panel
         }
+
+        // stretch rolepanel to fit most of the page
+        // (to the extent the invisible border allows)
+        loginGUI.add(rolePanel, BorderLayout.CENTER);
+
         return loginGUI;
     }
 
+    // initialiser for 'Login as admin page'
+    private JPanel adminLoginInit() {
+        JPanel adminLoginPage = new JPanel(new BorderLayout()); // initialises login as admin page
+        JLabel adminLogin = TopLabel(card2); // label at the top saying 'login as admin'
+
+        adminLoginPage.add(adminLogin, BorderLayout.NORTH); // places label at the top
+
+        JPanel enterCreds = enterCreds(); // initialises panel for entering credentials + submit/cancel buttons
+        adminLoginPage.add(enterCreds, BorderLayout.CENTER); // makes it take up the rest of the screen
+
+        return adminLoginPage;
+    }
+
+    // format the labels at the top automatically
+    private JLabel TopLabel(String labelName) {
+        JLabel TopLabel = new JLabel(labelName);
+
+        // make font bigger, create border so it's not hugging the top and have it in
+        // the middle instead of to the left
+        TopLabel.setFont(new Font("Dialog", Font.PLAIN, 72));
+        TopLabel.setBorder(BorderFactory.createEmptyBorder(50, 0, 50, 0));
+        TopLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        return TopLabel;
+    }
+
+    // initialises the enter credentials bit since it'll be the same across a few
+    // pages anyway
+    private JPanel enterCreds() {
+        JPanel enterCreds = new JPanel(new GridLayout(4, 1, 0, 50)); // smaller vgap since 4 things instead of 3
+        enterCreds.setBorder(BorderFactory.createEmptyBorder(50, 200, 50, 200)); // more invisible border stuffing
+
+        // enter username box
+        JPanel usernameBox = new JPanel(new BorderLayout()); // panel to hold label and box for entering info
+        JLabel usernameBoxLabel = new JLabel("Enter Username:"); // separate label cuz otherwise you gotta empty the box
+        JTextField enterUser = new JTextField(); // box to enter username
+        enterUser.setFont(new Font("Dialog", Font.PLAIN, 32)); // make font size bigger
+        usernameBox.add(usernameBoxLabel, BorderLayout.NORTH); // places label at top
+        usernameBox.add(enterUser, BorderLayout.CENTER); // box to enter pass takes rest of space
+
+        // enter password box
+        JPanel passwordBox = new JPanel(new BorderLayout()); // panel to hold label and box for entering info
+        JLabel passwordBoxLabel = new JLabel("Enter Username:");// separate label cuz otherwise you gotta empty the box
+        JTextField enterPass = new JTextField(); // box to enter password
+        enterPass.setFont(new Font("Dialog", Font.PLAIN, 32)); // make font size bigger
+        passwordBox.add(passwordBoxLabel, BorderLayout.NORTH); // places label at top
+        passwordBox.add(enterPass, BorderLayout.CENTER); // box to enter pass takes rest of space
+
+        JButton confLogin = new JButton("Login"); // button to submit for authentication
+        JButton cancLogin = new JButton("Return to Role Select"); // button to return to pick role screen
+
+        class returnListener implements ActionListener { // listener for return to role select button
+            public void actionPerformed(ActionEvent e) {
+                CardLayout c1 = (CardLayout) (Login.this.getContentPane().getLayout());
+                // gets cardlayout of outer frame
+                c1.show(Login.this.getContentPane(), card1); // switches to pickrolepage
+            }
+        }
+
+        cancLogin.addActionListener(new returnListener()); // attach listener to button
+        cancLogin.setFont(new Font("Dialog", Font.PLAIN, 32)); // make button font size bigger
+        // the rest are left unformatted to remind me i havent done them
+        // (remember to remove this comment too)
+
+        // adds the components to entercreds panel
+        enterCreds.add(usernameBox);
+        enterCreds.add(passwordBox);
+        enterCreds.add(confLogin);
+        enterCreds.add(cancLogin);
+
+        return enterCreds;
+    }
+
     public static void main(String[] args) {
-        new Login();
+        new Login(); // starts login thingy yes
     }
 }
