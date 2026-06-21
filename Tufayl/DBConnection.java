@@ -3,18 +3,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 
-// Single shared place to get a database connection from.
-// Anywhere in the app that needs the DB (Login, dashboards, appointment
-// booking later) just calls DBConnection.getConnection() instead of
-// each class opening its own connection.
+// one shared connection so we're not opening a new one in every class
 public class DBConnection {
 
     private static final String URL = "jdbc:postgresql://localhost:5432/hms";
     private static final String USERNAME = "postgres";
-
-    // TODO: replace this with the postgres password you set when you
-    // installed PostgreSQL on your machine. An empty password only works
-    // if your local server is configured for "trust" authentication.
+    
+    // change this to whatever password you set for postgres locally example admin123
     private static final String PASSWORD = "admin";
 
     private static Connection connection;
