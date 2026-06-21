@@ -1,0 +1,117 @@
+--User
+CREATE TABLE hmsUser(
+user_role VARCHAR(2) NOT NULL,
+user_id INTEGER NOT NULL,
+user_username VARCHAR(32) UNIQUE NOT NULL,
+user_password VARCHAR(32) NOT NULL,
+user_name     TEXT NOT NULL,
+PRIMARY KEY (user_role,user_id),
+CONSTRAINT roleChk CHECK (user_role IN ('AD','DR','RC')),
+CONSTRAINT idChk CHECK (user_id <= 999999),
+CONSTRAINT alphaNumUser CHECK (user_username ~ '^[A-Za-z0-9]+$'),
+CONSTRAINT alphaNumPass CHECK (user_password ~ '^[A-Za-z0-9]+$'),
+CONSTRAINT alphaNumName CHECK (user_name ~ '^[A-Za-z0-9]+( [A-Za-z0-9]+)*$')
+);
+
+--Create Sequences for individual user_roles
+CREATE SEQUENCE ad_user_id_seq;
+CREATE SEQUENCE dr_user_id_seq;
+CREATE SEQUENCE rc_user_id_seq;
+
+--setUserId based on role
+CREATE OR REPLACE FUNCTION set_new_id() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF NEW.user_role = 'AD' THEN
+  NEW.user_id := nextval('ad_user_id_seq');
+ ELSIF NEW.user_role = 'DR' THEN
+  NEW.user_id := nextval('DR_user_id_seq');
+ ELSIF NEW.user_role = 'RC' THEN
+  NEW.user_id := nextval('rc_user_id_seq');
+ ELSE
+  RAISE EXCEPTION 'user role invalid';
+ END IF;
+
+ RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE TRIGGER set_user_id BEFORE INSERT ON hmsUser FOR EACH ROW
+EXECUTE FUNCTION set_new_id();
+
+--Doctor
+CREATE TABLE doctor(
+doctor_id SERIAL NOT NULL,
+doctor_specialisation TEXT,
+PRIMARY KEY (doctor_id)
+);
+
+--Timeslots
+CREATE TABLE timeSlots(
+slot_id SERIAL NOT NULL,
+day SMALLINT NOT NULL,
+start_time TIME NOT NULL,
+PRIMARY KEY (slot_id)
+);
+
+--Schedule
+CREATE TABLE schedule(
+doctor_id INTEGER NOT NULL,
+slot_id INTEGER NOT NULL,
+availability boolean NOT NULL,
+PRIMARY KEY (doctor_id,slot_id),
+FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id),
+FOREIGN KEY (slot_id) REFERENCES timeslots(slot_id)
+);
+
+--Patient Records
+CREATE TABLE patientRecords(
+record_id SERIAL NOT NULL,
+patient_name TEXT NOT NULL,
+patient_gender CHAR NOT NULL DEFAULT 'X',
+patient_age SMALLINT NOT NULL,
+PRIMARY KEY (record_id),
+CONSTRAINT alphaNumName CHECK (patient_name ~ '^[A-Za-z0-9]+( [A-Za-z0-9]+)*$'),
+CONSTRAINT genderChk CHECK (patient_gender IN ('M','F','X')),
+CONSTRAINT ageChk CHECK (patient_age >= 0 AND patient_age <= 255)
+);
+
+--Appointment
+CREATE TABLE appointment(
+appointment_id SERIAL NOT NULL,
+doctor_id INTEGER NOT NULL,
+record_id INTEGER NOT NULL,
+appointment_time TIMESTAMP NOT NULL,
+diagnosis TEXT,
+prescription TEXT,
+status BOOLEAN NOT NULL DEFAULT TRUE,
+PRIMARY KEY (appointment_id),
+FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id),
+FOREIGN KEY (record_id) REFERENCES patientrecords(record_id)
+);
+
+--Admin Info
+CREATE VIEW adminInfo AS SELECT u.user_id AS admin_id, u.user_username AS admin_username, u.user_password AS admin_password, u.user_name AS admin_name FROM hmsUser as u WHERE (u.user_role = 'AD');
+
+--Receptionist Info
+CREATE VIEW receptionistInfo AS SELECT u.user_id AS receptionist_id, u.user_username AS receptionist_username, u.user_password AS receptionist_password, u.user_name AS receptionist_name FROM hmsUser as u WHERE (u.user_role = 'RC');
+
+--Doctor Info
+CREATE VIEW doctorInfo AS SELECT u.user_id AS doctor_id, u.user_username AS doctor_username, u.user_password AS doctor_password, u.user_name AS doctor_name, d.doctor_specialisation as specialisation FROM hmsUser as u JOIN doctor as d ON u.user_id = d.doctor_id AND u.user_role = 'DR';
+
+--List of Active Appointments
+CREATE VIEW activeAppointments AS SELECT a.appointment_id AS appointment_id, a.doctor_id AS doctor_id, u.user_name AS doctor_name, a.record_id AS record_id, r.patient_name AS patient_name, a.appointment_time AS appointment_time FROM appointment AS a LEFT JOIN hmsUser AS u ON u.user_id=a.doctor_id AND u.user_role = 'DR' LEFT JOIN patientRecords as r ON a.record_id = r.record_id WHERE (a.status = TRUE);
+
+--AuthInfo
+CREATE VIEW authInfo AS SELECT u.user_role AS user_role, u.user_id AS user_id, u.user_username AS username, u.user_password AS password FROM hmsUser as u;
+
+--populate Timeslots
+INSERT INTO timeSlots (day,start_time) VALUES (1,'00:00'),(1,'01:00'),(1,'02:00'),(1,'03:00'),(1,'04:00'),(1,'05:00'),(1,'06:00'),(1,'07:00'),(1,'08:00'),(1,'09:00'),(1,'10:00'),(1,'11:00'),(1,'12:00'),(1,'13:00'),(1,'14:00'),(1,'15:00'),(1,'16:00'),(1,'17:00'),(1,'18:00'),(1,'19:00'),(1,'20:00'),(1,'21:00'),(1,'22:00'),(1,'23:00'),(2,'00:00'),(2,'01:00'),(2,'02:00'),(2,'03:00'),(2,'04:00'),(2,'05:00'),(2,'06:00'),(2,'07:00'),(2,'08:00'),(2,'09:00'),(2,'10:00'),(2,'11:00'),(2,'12:00'),(2,'13:00'),(2,'14:00'),(2,'15:00'),(2,'16:00'),(2,'17:00'),(2,'18:00'),(2,'19:00'),(2,'20:00'),(2,'21:00'),(2,'22:00'),(2,'23:00'),(3,'00:00'),(3,'01:00'),(3,'02:00'),(3,'03:00'),(3,'04:00'),(3,'05:00'),(3,'06:00'),(3,'07:00'),(3,'08:00'),(3,'09:00'),(3,'10:00'),(3,'11:00'),(3,'12:00'),(3,'13:00'),(3,'14:00'),(3,'15:00'),(3,'16:00'),(3,'17:00'),(3,'18:00'),(3,'19:00'),(3,'20:00'),(3,'21:00'),(3,'22:00'),(3,'23:00'),(4,'00:00'),(4,'01:00'),(4,'02:00'),(4,'03:00'),(4,'04:00'),(4,'05:00'),(4,'06:00'),(4,'07:00'),(4,'08:00'),(4,'09:00'),(4,'10:00'),(4,'11:00'),(4,'12:00'),(4,'13:00'),(4,'14:00'),(4,'15:00'),(4,'16:00'),(4,'17:00'),(4,'18:00'),(4,'19:00'),(4,'20:00'),(4,'21:00'),(4,'22:00'),(4,'23:00'),(5,'00:00'),(5,'01:00'),(5,'02:00'),(5,'03:00'),(5,'04:00'),(5,'05:00'),(5,'06:00'),(5,'07:00'),(5,'08:00'),(5,'09:00'),(5,'10:00'),(5,'11:00'),(5,'12:00'),(5,'13:00'),(5,'14:00'),(5,'15:00'),(5,'16:00'),(5,'17:00'),(5,'18:00'),(5,'19:00'),(5,'20:00'),(5,'21:00'),(5,'22:00'),(5,'23:00'),(6,'00:00'),(6,'01:00'),(6,'02:00'),(6,'03:00'),(6,'04:00'),(6,'05:00'),(6,'06:00'),(6,'07:00'),(6,'08:00'),(6,'09:00'),(6,'10:00'),(6,'11:00'),(6,'12:00'),(6,'13:00'),(6,'14:00'),(6,'15:00'),(6,'16:00'),(6,'17:00'),(6,'18:00'),(6,'19:00'),(6,'20:00'),(6,'21:00'),(6,'22:00'),(6,'23:00'),(7,'00:00'),(7,'01:00'),(7,'02:00'),(7,'03:00'),(7,'04:00'),(7,'05:00'),(7,'06:00'),(7,'07:00'),(7,'08:00'),(7,'09:00'),(7,'10:00'),(7,'11:00'),(7,'12:00'),(7,'13:00'),(7,'14:00'),(7,'15:00'),(7,'16:00'),(7,'17:00'),(7,'18:00'),(7,'19:00'),(7,'20:00'),(7,'21:00'),(7,'22:00'),(7,'23:00');
+
+--populate Admins
+INSERT INTO hmsUser(user_role,user_username,user_password,user_name) VALUES ('AD','nizam1up','Zxcv123','Nizam Bin Nazri'), ('AD','adam2up','Asdf123','Muhammad Adam Iqbal Bin Hafiz'), ('AD','tufayl3up','Zxcv456','Muhammad Tufayl Aiman Bin Sulaiman'),('AD','nadirah4up','Asdf456','Nur Nadirah Binti Dominggo Yusuf');
+
+--populate Doctor
+INSERT INTO hmsUser(user_role,user_username,user_password,user_name) VALUES ('DR','hateRichards','DOOM','Victor von Doom');
+
+--populate Receptionist
+INSERT INTO hmsUser(user_role,user_username,user_password,user_name) VALUES ('RC','futureSpengler','Ecto1','Janine Melnitz');
