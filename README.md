@@ -1,7 +1,7 @@
-OOAD Group 2 Lab Exercise
-Task Assignment
-login - Nizam
-user dashboards + basic reporting - tufayl
-appointment booking - Adam
-patient record management - Adam
-doctor management - nadirah
+OOAD Group 2 Lab Exercise <br>
+Task Assignment <br>
+login - Nizam <br>
+user dashboards + basic reporting - tufayl <br>
+appointment booking - Adam <br>
+patient record management - Adam <br>
+doctor management - nadirah <br>
