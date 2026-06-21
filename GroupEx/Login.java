@@ -12,7 +12,7 @@ public class Login extends JFrame {
     final static String card2 = "Login as Admin";
     final static String card3 = "Login as Doctor";
     final static String card4 = "Login as Receptionist";
-    // role currently unused really but important for later database integration
+    //role to keep track for login purpose
     static String role;
 
     public Login() {
