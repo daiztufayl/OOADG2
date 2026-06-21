@@ -1,6 +1,4 @@
-// Holds details of whoever is currently logged in, set once at login
-// and readable from any dashboard/screen afterwards.
-// Example: Session.getName(), Session.getRole(), Session.getUserId()
+// Session is a holder for "who's logged in right now"
 public class Session {
 
     private static String role;
