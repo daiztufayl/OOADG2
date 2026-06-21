@@ -20,7 +20,7 @@ public class Login extends JFrame {
         try {
             String databaseURL = "jdbc:postgresql://localhost:5432/hms";
             String username = "postgres";
-            String password = "Zxcv123";
+            String password = "";
             this.conn = DriverManager.getConnection(databaseURL, username, password);
         } catch (SQLException e) {
             e.printStackTrace();
