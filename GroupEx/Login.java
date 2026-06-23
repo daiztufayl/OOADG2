@@ -12,19 +12,12 @@ public class Login extends JFrame {
     final static String card2 = "Login as Admin";
     final static String card3 = "Login as Doctor";
     final static String card4 = "Login as Receptionist";
-    //role to keep track for login purpose
+    // role currently unused really but important for later database integration
     static String role;
 
     public Login() {
 
-        try {
-            String databaseURL = "jdbc:postgresql://localhost:5432/hms";
-            String username = "postgres";
-            String password = "";
-            this.conn = DriverManager.getConnection(databaseURL, username, password);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        this.conn = DBConnection.getDBConnection();
 
         super("Login to Hospital Management System"); // titles the Login JFrame
         setLayout(new CardLayout()); // sets the JFrame's Content Pane to use CardLayout for swapping pages
@@ -90,15 +83,15 @@ public class Login extends JFrame {
 
                         break;
                     case 1:
-                        role = "RC"; // sets role for authenticating credentials with database
+                        role = "DR"; // sets role for authenticating credentials with database
 
                         c1.show(Login.this.getContentPane(), card3); // switches active page to 'Login as Doctor'
 
                         break;
                     case 2:
-                        role = "DR"; // sets role for authenticating credentials with database
+                        role = "RC"; // sets role for authenticating credentials with database
 
-                        c1.show(Login.this.getContentPane(), card4); // switches active page to 'Login as Doctor'
+                        c1.show(Login.this.getContentPane(), card4); // switches active page to 'Login as Receptionist'
 
                         break;
                 }
@@ -167,6 +160,7 @@ public class Login extends JFrame {
         // enter username box
         JPanel usernameBox = new JPanel(new BorderLayout()); // panel to hold label and box for entering info
         JLabel usernameBoxLabel = new JLabel("Enter Username:"); // separate label cuz otherwise you gotta empty the box
+        usernameBoxLabel.setFont(new Font("Dialog", Font.PLAIN, 32)); // make font size bigger
         JTextField enterUser = new JTextField(); // box to enter username
         enterUser.setFont(new Font("Dialog", Font.PLAIN, 32)); // make font size bigger
         usernameBox.add(usernameBoxLabel, BorderLayout.NORTH); // places label at top
@@ -176,6 +170,7 @@ public class Login extends JFrame {
         JPanel passwordBox = new JPanel(new BorderLayout()); // panel to hold label and box for entering info
         JLabel passwordBoxLabel = new JLabel("Enter Password:");// separate label cuz otherwise you gotta empty the box
         JTextField enterPass = new JTextField(); // box to enter password
+        passwordBoxLabel.setFont(new Font("Dialog", Font.PLAIN, 32)); // make font size bigger
         enterPass.setFont(new Font("Dialog", Font.PLAIN, 32)); // make font size bigger
         passwordBox.add(passwordBoxLabel, BorderLayout.NORTH); // places label at top
         passwordBox.add(enterPass, BorderLayout.CENTER); // box to enter pass takes rest of space
@@ -208,11 +203,7 @@ public class Login extends JFrame {
                 }
                 // passed all checks, proceed to login
                 else {
-                    // IMPORTANT toDo HERE:
-                    JOptionPane.showMessageDialog(null,
-                            "Login Successful, Welcome " + usernameInput + ".",
-                            "Login Success", JOptionPane.INFORMATION_MESSAGE);
-                    // remember to send to user dashboard instead during integration
+                    loginToDash(usernameInput);
                 }
             }
         }
@@ -265,6 +256,25 @@ public class Login extends JFrame {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private void loginToDash(String username) {
+        String loginString = "SELECT user_id, user_name FROM hmsUser WHERE user_role = (?) AND user_username = (?)";
+        try {
+            PreparedStatement logStatement = conn.prepareStatement(loginString);
+            logStatement.setString(1, role);
+            logStatement.setString(2, username);
+            ResultSet result = logStatement.executeQuery();
+
+            if (result.next()) {
+                int userId = result.getInt("user_id");
+                String userName = result.getString("user_name");
+                Session.startUserSession(role, userId, username, userName);
+            }
+            logStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
