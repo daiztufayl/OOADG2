@@ -34,12 +34,10 @@ public class ManageDoctorsFrame extends JFrame {
 
         btnViewDoctors.addActionListener(e -> {
 
-            JOptionPane.showMessageDialog(
-        null,
-        "View Doctors feature coming soon!"
-            );
-
+            new ViewDoctorsFrame().setVisible(true);
+        
         });
+        
         btnAddDoctor.addActionListener(e -> {
 
             if (txtDoctorID.getText().trim().isEmpty() ||
@@ -57,11 +55,21 @@ public class ManageDoctorsFrame extends JFrame {
         
             } else {
         
+                int doctorID = Integer.parseInt(txtDoctorID.getText());
+
+                Doctor doctor = new Doctor(
+                doctorID,
+                txtName.getText(),
+                txtSpecialisation.getText()
+                );
+
+                DoctorList.doctors.add(doctor);
+
                 JOptionPane.showMessageDialog(
-                    null,
-                    "Validation Passed!",
-                    "Success",
-                    JOptionPane.INFORMATION_MESSAGE
+                null,
+                "Doctor Added Successfully!",
+                "Success",
+                JOptionPane.INFORMATION_MESSAGE
                 );
             }
         });
