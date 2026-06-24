@@ -6,7 +6,7 @@ public class ManageDoctorsFrame extends JFrame {
     public ManageDoctorsFrame() {
 
         setTitle("Manage Doctors");
-        setSize(500, 250);
+        setSize(650, 250);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -31,6 +31,7 @@ public class ManageDoctorsFrame extends JFrame {
         JButton btnAddDoctor = new JButton("Add Doctor");
         JButton btnClear = new JButton("Clear");
         JButton btnViewDoctors = new JButton("View Doctors");
+        JButton btnAssignSpecialisation = new JButton("Assign Specialisation");
 
         btnViewDoctors.addActionListener(e -> {
 
@@ -55,7 +56,38 @@ public class ManageDoctorsFrame extends JFrame {
         
             } else {
         
-                int doctorID = Integer.parseInt(txtDoctorID.getText());
+                int doctorID;
+
+                try {
+
+                    doctorID = Integer.parseInt(txtDoctorID.getText().trim());
+
+                } catch (NumberFormatException ex) {
+
+                    JOptionPane.showMessageDialog(
+                    null,
+                    "Doctor ID must be a number!",
+                    "Invalid Input",
+                        JOptionPane.ERROR_MESSAGE
+                    );
+
+                    return;
+                }
+
+                for (Doctor d : DoctorList.doctors) {
+
+                    if (d.getDoctorID() == doctorID) {
+
+                        JOptionPane.showMessageDialog(
+                        null,
+                        "Doctor ID already exists!",
+                        "Duplicate ID",
+                        JOptionPane.ERROR_MESSAGE
+                        );
+
+                        return;
+                    }
+                }
 
                 Doctor doctor = new Doctor(
                 doctorID,
@@ -70,6 +102,79 @@ public class ManageDoctorsFrame extends JFrame {
                 "Doctor Added Successfully!",
                 "Success",
                 JOptionPane.INFORMATION_MESSAGE
+                );
+            }
+        });
+
+        btnAssignSpecialisation.addActionListener(e -> {
+
+            String doctorIdInput = JOptionPane.showInputDialog(
+                "Enter Doctor ID:"
+            );
+        
+            String newSpecialisation = JOptionPane.showInputDialog(
+                "Enter New Specialisation:"
+            );
+        
+            if (doctorIdInput == null ||
+                newSpecialisation == null ||
+                doctorIdInput.trim().isEmpty() ||
+                newSpecialisation.trim().isEmpty()) {
+        
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Invalid Input!",
+                    "Failure",
+                    JOptionPane.ERROR_MESSAGE
+                );
+        
+                return;
+            }
+        
+            int doctorID;
+
+            try {
+
+                doctorID = Integer.parseInt(doctorIdInput.trim());
+
+            } catch (NumberFormatException ex) {
+
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Doctor ID must be a number!",
+                    "Invalid Input",
+                    JOptionPane.ERROR_MESSAGE
+                );
+
+                return;
+            }
+
+            boolean found = false;
+        
+            for (Doctor doctor : DoctorList.doctors) {
+        
+                if (doctor.getDoctorID() == doctorID) {
+        
+                    doctor.setSpecialization(newSpecialisation);
+        
+                    found = true;
+        
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "Specialisation Updated Successfully!"
+                    );
+        
+                    break;
+                }
+            }
+        
+            if (!found) {
+        
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Doctor Not Found!",
+                    "Failure",
+                    JOptionPane.ERROR_MESSAGE
                 );
             }
         });
@@ -104,6 +209,7 @@ public class ManageDoctorsFrame extends JFrame {
         buttonPanel.add(btnAddDoctor);
         buttonPanel.add(btnClear);
         buttonPanel.add(btnViewDoctors);
+        buttonPanel.add(btnAssignSpecialisation);
 
         add(buttonPanel, BorderLayout.SOUTH);
     }
