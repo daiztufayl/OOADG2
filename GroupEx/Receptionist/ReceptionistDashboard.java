@@ -34,8 +34,7 @@ public class ReceptionistDashboard extends JFrame {
         btnRegisterPatient.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // new RegisterPatientDialog(ReceptionistDashboard.this).setVisible(true);
-                JOptionPane.showMessageDialog(null, "Placeholder: Opening Register Patient Form");
+                new PatientRecordPanel().setVisible(true);
             }
         });
 
