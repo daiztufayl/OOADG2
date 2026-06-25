@@ -34,14 +34,17 @@ public class ManageDoctorsFrame extends JFrame {
         JButton btnViewDoctors = new JButton("View Doctors");
         JButton btnAssignSpecialisation = new JButton("Assign Specialisation");
 
+        // Open View Doctors page
         btnViewDoctors.addActionListener(e -> {
 
             new ViewDoctorsFrame().setVisible(true);
         
         });
         
+        // Add Doctor
         btnAddDoctor.addActionListener(e -> {
 
+            // Check if all fields are filled
             if (txtName.getText().trim().isEmpty() ||
                 txtUsername.getText().trim().isEmpty() ||
                 new String(txtPassword.getPassword()).trim().isEmpty() ||
@@ -53,20 +56,17 @@ public class ManageDoctorsFrame extends JFrame {
                     "Invalid Input",
                     JOptionPane.ERROR_MESSAGE
                 );
-
-                txtName.setText("");
-                txtUsername.setText("");
-                txtPassword.setText("");
-                txtSpecialisation.setText("");
         
             } else {
 
+                // Connect to database
                 Connection conn = DBConnection.getDBConnection();
             
                 if (conn == null) {
                     return;
                 }
 
+                // Check if username already exists
                 String checkQuery =
                     "SELECT COUNT(*) FROM hmsuser WHERE user_username = ?";
 
@@ -79,7 +79,7 @@ public class ManageDoctorsFrame extends JFrame {
                     if (rs.next() && rs.getInt(1) > 0) {
 
                         JOptionPane.showMessageDialog(
-                             null,
+                            null,
                             "Username already exists!",
                             "Duplicate Username",
                             JOptionPane.ERROR_MESSAGE
@@ -102,6 +102,7 @@ public class ManageDoctorsFrame extends JFrame {
                     return;
                 }
 
+                // Insert doctor into hmsuser table
                 String insertUserQuery =
                 "INSERT INTO hmsuser (user_role, user_username, user_password, user_name) " +
                 "VALUES (?, ?, ?, ?)";
@@ -115,7 +116,7 @@ public class ManageDoctorsFrame extends JFrame {
 
                     insertUserStmt.executeUpdate();
 
-                    // Get the doctor's ID
+                    // Get the doctor ID
                     String getDoctorIdQuery =
                         "SELECT user_id FROM hmsuser WHERE user_username = ?";
 
@@ -130,6 +131,7 @@ public class ManageDoctorsFrame extends JFrame {
 
                             int doctorID = rs.getInt("user_id");
 
+                            // Insert doctor's specialisation into doctor table
                             String insertDoctorQuery =
                                 "INSERT INTO doctor (doctor_id, doctor_specialisation) VALUES (?, ?)";
 
@@ -144,12 +146,19 @@ public class ManageDoctorsFrame extends JFrame {
                         }
                     }
 
+                    // Show success message
                     JOptionPane.showMessageDialog(
                         null,
                         "Doctor Added Successfully!",
                         "Success",
                         JOptionPane.INFORMATION_MESSAGE
                     );
+
+                    // Clear all fields
+                    txtName.setText("");
+                    txtUsername.setText("");
+                    txtPassword.setText("");
+                    txtSpecialisation.setText("");
 
                 } catch (SQLException ex) {
 
@@ -168,8 +177,10 @@ public class ManageDoctorsFrame extends JFrame {
             }
         });
 
+        // Assign doctor specialisation
         btnAssignSpecialisation.addActionListener(e -> {
 
+            // Get doctor ID and new specialisation
             String doctorIdInput = JOptionPane.showInputDialog(
                 "Enter Doctor ID:"
             );
@@ -178,6 +189,7 @@ public class ManageDoctorsFrame extends JFrame {
                 "Enter New Specialisation:"
             );
         
+            // Check for empty input
             if (doctorIdInput == null ||
                 newSpecialisation == null ||
                 doctorIdInput.trim().isEmpty() ||
@@ -195,6 +207,7 @@ public class ManageDoctorsFrame extends JFrame {
         
             int doctorID;
 
+            // Validate doctor ID
             try {
 
                 doctorID = Integer.parseInt(doctorIdInput.trim());
@@ -211,12 +224,14 @@ public class ManageDoctorsFrame extends JFrame {
                 return;
             }
 
+            // Connect to database
             Connection conn = DBConnection.getDBConnection();
 
             if (conn == null) {
                 return;
             }
 
+            // Update doctor's specialisation
             String updateQuery =
             "UPDATE doctor SET doctor_specialisation = ? WHERE doctor_id = ?";
 
@@ -243,6 +258,7 @@ public class ManageDoctorsFrame extends JFrame {
                     JOptionPane.ERROR_MESSAGE
                     );
                 }
+
             } catch (SQLException ex) {
 
                 ex.printStackTrace();
@@ -256,6 +272,7 @@ public class ManageDoctorsFrame extends JFrame {
             }
         });
 
+        // Clear all fields
         btnClear.addActionListener(e -> {
             txtName.setText("");
             txtUsername.setText("");
@@ -263,6 +280,7 @@ public class ManageDoctorsFrame extends JFrame {
             txtSpecialisation.setText("");
         });
 
+        // Add components to panel
         panel.add(lblName);
         panel.add(txtName);
 
@@ -277,6 +295,7 @@ public class ManageDoctorsFrame extends JFrame {
 
         add(panel, BorderLayout.CENTER);
 
+        // Add buttons
         JPanel buttonPanel = new JPanel();
 
         buttonPanel.add(btnAddDoctor);
@@ -287,6 +306,7 @@ public class ManageDoctorsFrame extends JFrame {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
+    // Launch the Manage Doctors window
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
