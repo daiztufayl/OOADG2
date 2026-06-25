@@ -35,13 +35,11 @@ public class DoctorDashboard extends JFrame {
             }
         });
 
-        btnUpdateRecords.addActionListener(new ActionListener() // Button For Patient Records
+        btnUpdateRecords.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Opening Update Patient Records");
-                // open viewpatientpage
-                // new ViewPatientFrame(Session.getUserId()).setVisible(true);
-            }
+                new PatientRecordPanel().setVisible(true);
+        }
         });
 
         btnActiveAppointments.addActionListener(new ActionListener() // Button For Appointment
