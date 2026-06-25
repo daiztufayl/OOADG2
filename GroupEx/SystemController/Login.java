@@ -217,12 +217,9 @@ public class Login extends JFrame {
         }
 
         confLogin.addActionListener(new loginListener()); // attach listener to button
-        // confLogin.setFont(new Font("Dialog", Font.PLAIN, 32)); // make button font
-        // size bigger
+        confLogin.setFont(new Font("Dialog", Font.PLAIN, 32)); // make button font size bigger
         cancLogin.addActionListener(new returnListener()); // attach listener to button
         cancLogin.setFont(new Font("Dialog", Font.PLAIN, 32)); // make button font size bigger
-        // confLogin is left unformatted to remind that it's not finished and needs to
-        // be integrated
 
         // adds the components to entercreds panel
         enterCreds.add(usernameBox);
@@ -272,6 +269,20 @@ public class Login extends JFrame {
                 String userName = result.getString("user_name");
                 Session.startUserSession(role, userId, username, userName);
             }
+
+            switch (role) {
+                case "AD":
+                    new AdminDashboard().setVisible(true);
+                    break;
+                case "DR":
+                    new DoctorDashboard().setVisible(true);
+                    break;
+                case "RC":
+                    new ReceptionistDashboard().setVisible(true);
+                    break;
+            }
+            dispose();
+
             logStatement.close();
         } catch (SQLException e) {
             e.printStackTrace();
