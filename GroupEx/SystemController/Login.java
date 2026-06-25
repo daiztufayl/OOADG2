@@ -105,10 +105,10 @@ public class Login extends JFrame {
                     roleButtons[0] = new JButton("Admin");
                     break;
                 case 1:
-                    roleButtons[1] = new JButton("Receptionist");
+                    roleButtons[1] = new JButton("Doctor");
                     break;
                 case 2:
-                    roleButtons[2] = new JButton("Doctor");
+                    roleButtons[2] = new JButton("Receptionist");
                     break;
             }
             roleButtons[i].setActionCommand(String.valueOf(i)); // set identifier of buttons for switch/case
