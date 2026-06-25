@@ -61,7 +61,7 @@ public class ManageDoctorsFrame extends JFrame {
         
             } else {
 
-                Connection conn = DBConnection.getConnection();
+                Connection conn = DBConnection.getDBConnection();
             
                 if (conn == null) {
                     return;
@@ -211,7 +211,7 @@ public class ManageDoctorsFrame extends JFrame {
                 return;
             }
 
-            Connection conn = DBConnection.getConnection();
+            Connection conn = DBConnection.getDBConnection();
 
             if (conn == null) {
                 return;

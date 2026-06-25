@@ -22,7 +22,7 @@ public class ViewDoctorsFrame extends JFrame {
     
         DefaultTableModel model = new DefaultTableModel(columns, 0);
 
-        Connection conn = DBConnection.getConnection();
+        Connection conn = DBConnection.getDBConnection();
 
         if (conn != null) {
 
