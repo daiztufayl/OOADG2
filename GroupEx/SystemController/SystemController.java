@@ -2,6 +2,7 @@ package SystemController;
 
 import java.sql.*;
 import javax.swing.*;
+import model.*;
 
 public class SystemController {
     public static Session currentUser;
@@ -18,6 +19,23 @@ public class SystemController {
 
     public static void setCurrentUser(Session currUser) {
         currentUser = currUser;
+        String role = currentUser.getRole();
+        switch (role) {
+            case "AD":
+                Admin admin = new Admin(currentUser.getUserID(), currentUser.getUsername(), currentUser.getName());
+                admin.openDashboard();
+                break;
+            case "DR":
+                Doctor doctor = new Doctor(currentUser.getUserID(), currentUser.getUsername(), currentUser.getName(),
+                        "");
+                doctor.openDashboard();
+                break;
+            case "RC":
+                Receptionist receptionist = new Receptionist(currentUser.getUserID(), currentUser.getUsername(),
+                        currentUser.getName());
+                receptionist.openDashboard();
+                break;
+        }
     }
 
     public static Session getCurrentUser() {
