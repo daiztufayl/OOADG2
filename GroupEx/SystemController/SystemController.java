@@ -1,13 +1,28 @@
+package SystemController;
+
 import java.sql.*;
 import javax.swing.*;
 
-public class DBConnection {
-    // initialises the connection details
+public class SystemController {
+    public static Session currentUser;
+
     private static final String DATABASEURL = "jdbc:postgresql://localhost:5432/hms";
     private static final String USERNAME = "postgres"; // idk just use default postgres user should be fine
     private static final String PASSWORD = "Zxcv123"; // change to password for the default postgres user 'postgres'
-                                                      // (default postgres password is "":nothing)
+    // (default postgres password is "":nothing)
     private static Connection conn;
+
+    public SystemController() {
+        new Login();
+    }
+
+    public static void setCurrentUser(Session currUser) {
+        currentUser = currUser;
+    }
+
+    public static Session getCurrentUser() {
+        return currentUser;
+    }
 
     public static Connection getDBConnection() {
         if (conn == null) {
@@ -27,11 +42,23 @@ public class DBConnection {
     public static void closeDBConnection() {
         if (conn != null) {
             try {
-                conn.rollback();
                 conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void redirectLogin() {
+        new Login();
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new SystemController();
+            }
+        });
     }
 }

@@ -1,3 +1,7 @@
+package view;
+
+import SystemController.*;
+
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
@@ -15,15 +19,20 @@ public class DoctorDashboard extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // greet the doctor who actually logged in, name get from database
-        String doctorName = (Session.getName() != null) ? Session.getName() : "Doctor"; //session getname from here
+        String doctorName = (SystemController.getCurrentUser().getName() != null) ? SystemController.getCurrentUser().getName() : "Doctor"; //session getname from here
         JLabel headerLabel = new JLabel("Welcome, Dr. " + doctorName, SwingConstants.CENTER);
         headerLabel.setFont(new Font("Arial", Font.BOLD, 22));
         mainPanel.add(headerLabel, BorderLayout.NORTH);
 
         JPanel menuPanel = new JPanel(new GridLayout(3, 1, 10, 20));
         JButton btnViewSchedule = new JButton("Manage Schedule & Availability");
+        btnViewSchedule.setFont(new Font("Dialog", Font.PLAIN, 18));
+
         JButton btnUpdateRecords = new JButton("Update Patient Records");
+        btnUpdateRecords.setFont(new Font("Dialog", Font.PLAIN, 18));
+
         JButton btnActiveAppointments = new JButton("View Active Appointments");
+        btnActiveAppointments.setFont(new Font("Dialog", Font.PLAIN, 18));
 
         // Button to open ManageScheduleFrame, ViewPatientFrame and ActiveAppointmentsFrame
         btnViewSchedule.addActionListener(new ActionListener() // Button For Doctor's Schedule
@@ -31,15 +40,15 @@ public class DoctorDashboard extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(null, "Opening Manage Schedule & Availability");
                 // open management page
-                // new ManageScheduleFrame(Session.getUserId()).setVisible(true);
+                new ManageScheduleFrame(SystemController.getCurrentUser().getUserID()).setVisible(true);
             }
         });
 
         btnUpdateRecords.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e) {
-                new PatientRecordPanel().setVisible(true);
-        }
+                new DoctorPatientPanel().setVisible(true);
+            }
         });
 
         btnActiveAppointments.addActionListener(new ActionListener() // Button For Appointment
@@ -47,7 +56,7 @@ public class DoctorDashboard extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(null, "Opening Active Appointments");
                 // open ViewAppointments page, data received from db
-                new ViewAppointmentsFrame(Session.getUserId()).setVisible(true); // straight get patient id to pull out info saved from db like schedule etc
+                new ViewAppointmentsFrame(SystemController.getCurrentUser().getUserID()).setVisible(true); // straight get patient id to pull out info saved from db like schedule etc
             }
         });
 
@@ -58,13 +67,14 @@ public class DoctorDashboard extends JFrame {
 
         JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnLogout = new JButton("Logout");
+        btnLogout.setFont(new Font("Dialog", Font.PLAIN, 16));
 
         btnLogout.addActionListener(new ActionListener()  // Button to log out
         {
             public void actionPerformed(ActionEvent e)
             {
                 JOptionPane.showMessageDialog(null, "Log out successfully");
-                Session.clear(); // forget who was logged in
+                SystemController.getCurrentUser().closeUserSession(); // forget who was logged in
                 dispose(); // Closes the dashboard window
                 new Login(); // back to the login screen
             }

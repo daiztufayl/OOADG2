@@ -1,3 +1,7 @@
+package view;
+
+import SystemController.*;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -20,7 +24,7 @@ public class AdminDashboard extends JFrame {
 
         // Header Text
         // greet the admin who actually logged in, name getting from database
-        String adminName = (Session.getName() != null) ? Session.getName() : "Admin";
+        String adminName = (SystemController.getCurrentUser().getName() != null) ? SystemController.getCurrentUser().getName() : "Admin";
         JLabel lblHeader = new JLabel("Welcome, " + adminName, SwingConstants.CENTER);
         lblHeader.setFont(new Font("Arial", Font.BOLD, 24));
         mainPanel.add(lblHeader, BorderLayout.NORTH);
@@ -36,14 +40,17 @@ public class AdminDashboard extends JFrame {
         lblTotalAppointments.setFont(new Font("Arial", Font.PLAIN, 16));
 
         JButton btnManageDoctors = new JButton("Manage Doctors");
+        btnManageDoctors.setFont(new Font("Dialog", Font.PLAIN, 18));
+
         JButton btnViewSchedules = new JButton("View Doctor Schedules");
+        btnViewSchedules.setFont(new Font("Dialog", Font.PLAIN, 18));
 
         // Button to (Manage Doctors)
         btnManageDoctors.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // new ManageDoctorsFrame().setVisible(true);
-                JOptionPane.showMessageDialog(null, "Placeholder: Opening Manage Doctors Window");
+                new ManageDoctorsFrame().setVisible(true);
+                JOptionPane.showMessageDialog(null, "Opening Manage Doctors Window");
             }
         });
 
@@ -52,8 +59,8 @@ public class AdminDashboard extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // need viewdoctorschedule.java
-                // new ViewDoctorSchedulesFrame().setVisible(true);
-                JOptionPane.showMessageDialog(null, "Placeholder: Opening Master Schedule Viewer");
+                new ViewDoctorsFrame().setVisible(true);
+                JOptionPane.showMessageDialog(null, "Opening Master Schedule Viewer");
             }
         });
 
@@ -67,6 +74,7 @@ public class AdminDashboard extends JFrame {
         // Logout
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnLogout = new JButton("Logout");
+        btnLogout.setFont(new Font("Dialog", Font.PLAIN, 16));
 
         // Logout and return to Login Screen
         btnLogout.addActionListener(new ActionListener() {
@@ -74,9 +82,9 @@ public class AdminDashboard extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(null, "Logging out... Returning to Login Screen.");
 
-                Session.clear(); // forget who was logged in
+                SystemController.getCurrentUser().closeUserSession(); // forget who was logged in
                 dispose(); // Closes the Admin Dashboard
-                new Login(); // back to the login screen
+                SystemController.redirectLogin(); // back to the login screen
             }
         });
 
@@ -88,8 +96,8 @@ public class AdminDashboard extends JFrame {
 
     // counts rows in patientRecords, the data is connected to database
     private int getTotalPatients() {
-        String query = "SELECT COUNT(*) AS total FROM patientRecords";
-        Connection conn = DBConnection.getConnection();
+        String query = "SELECT COUNT(*) AS total FROM patientrecords";
+        Connection conn = SystemController.getDBConnection();
         if (conn == null) return 0;
 
         try (Statement st = conn.createStatement();
@@ -105,8 +113,8 @@ public class AdminDashboard extends JFrame {
 
     // counts rows in the activeAppointments view (appointments with status = true)
     private int getTotalActiveAppointments() {
-        String query = "SELECT COUNT(*) AS total FROM activeAppointments";
-        Connection conn = DBConnection.getConnection();
+        String query = "SELECT COUNT(*) AS total FROM activeappointments";
+        Connection conn = SystemController.getDBConnection();
         if (conn == null) return 0;
 
         try (Statement st = conn.createStatement();

@@ -1,4 +1,9 @@
+package view;
+
 import javax.swing.*;
+
+import SystemController.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -86,12 +91,13 @@ public class BookAppointmentFrame extends JFrame {
 
     // fills the patient dropdown from patientRecords
     private void loadPatients() {
-        String query = "SELECT record_id, patient_name FROM patientRecords ORDER BY patient_name";
-        Connection conn = DBConnection.getConnection();
-        if (conn == null) return;
+        String query = "SELECT record_id, patient_name FROM patientrecords ORDER BY patient_name";
+        Connection conn = SystemController.getDBConnection();
+        if (conn == null)
+            return;
 
         try (Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(query)) {
+                ResultSet rs = st.executeQuery(query)) {
             while (rs.next()) {
                 patientCombo.addItem(new ComboItem(rs.getInt("record_id"), rs.getString("patient_name")));
             }
@@ -108,12 +114,13 @@ public class BookAppointmentFrame extends JFrame {
 
     // fills the doctor dropdowns from database
     private void loadDoctors() {
-        String query = "SELECT doctor_id, doctor_name, specialisation FROM doctorInfo ORDER BY doctor_name";
-        Connection conn = DBConnection.getConnection();
-        if (conn == null) return;
+        String query = "SELECT doctor_id, doctor_name, specialisation FROM doctorinfo ORDER BY doctor_name";
+        Connection conn = SystemController.getDBConnection();
+        if (conn == null)
+            return;
 
         try (Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(query)) {
+                ResultSet rs = st.executeQuery(query)) {
             while (rs.next()) {
                 String label = rs.getString("doctor_name");
                 String spec = rs.getString("specialisation");
@@ -187,12 +194,14 @@ public class BookAppointmentFrame extends JFrame {
         }
     }
 
-    // prevents duplicate time slots checks if this doctor has any active appointment in same date and time
+    // prevents duplicate time slots checks if this doctor has any active
+    // appointment in same date and time
     private boolean isSlotTaken(int doctorId, LocalDateTime time) {
         String query = "SELECT COUNT(*) AS total FROM appointment WHERE doctor_id = ? AND appointment_time = ? AND status = TRUE";
-        Connection conn = DBConnection.getConnection();
-        if (conn == null) return true; // fail safe: block booking if we can't even check
-
+        Connection conn = SystemController.getDBConnection();
+        if (conn == null) {
+            return true; // fail safe: block booking if we can't even check
+        }
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, doctorId);
             ps.setTimestamp(2, Timestamp.valueOf(time));
@@ -209,8 +218,9 @@ public class BookAppointmentFrame extends JFrame {
 
     private boolean insertAppointment(int doctorId, int recordId, LocalDateTime time) {
         String query = "INSERT INTO appointment (doctor_id, record_id, appointment_time) VALUES (?, ?, ?)";
-        Connection conn = DBConnection.getConnection();
-        if (conn == null) return false;
+        Connection conn = SystemController.getDBConnection();
+        if (conn == null)
+            return false;
 
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, doctorId);
@@ -223,7 +233,7 @@ public class BookAppointmentFrame extends JFrame {
         }
     }
 
-    //small helper to keep in check
+    // small helper to keep in check
     private static class ComboItem {
         final int id;
         final String label;

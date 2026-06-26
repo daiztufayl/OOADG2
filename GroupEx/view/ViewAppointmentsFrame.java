@@ -1,5 +1,10 @@
+package view;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
+import SystemController.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -84,11 +89,11 @@ public class ViewAppointmentsFrame extends JFrame {
 
         boolean filterByDoctor = (doctorId != null);
         String query = "SELECT appointment_id, doctor_name, patient_name, appointment_time " +
-                "FROM activeAppointments " +
+                "FROM activeappointments " +
                 (filterByDoctor ? "WHERE doctor_id = ? " : "") +
                 "ORDER BY appointment_time";
 
-        Connection conn = DBConnection.getConnection();
+        Connection conn = SystemController.getDBConnection();
         if (conn == null) {
             statusLabel.setText("Could not connect to the database.");
             return;
@@ -119,6 +124,7 @@ public class ViewAppointmentsFrame extends JFrame {
                 String scope = filterByDoctor ? "" : " system-wide";
                 statusLabel.setText(count + " active appointment" + (count == 1 ? "" : "s") + scope);
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
             statusLabel.setText("Could not load appointments.");

@@ -1,8 +1,12 @@
+package SystemController;
 
 import java.sql.*;
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
+
+import view.*;
 
 public class Login extends JFrame {
     private Connection conn;
@@ -14,10 +18,10 @@ public class Login extends JFrame {
     final static String card4 = "Login as Receptionist";
     // role currently unused really but important for later database integration
     static String role;
+    Session currUser;
 
     public Login() {
-
-        this.conn = DBConnection.getDBConnection();
+        this.conn = SystemController.getDBConnection();
 
         super("Login to Hospital Management System"); // titles the Login JFrame
         setLayout(new CardLayout()); // sets the JFrame's Content Pane to use CardLayout for swapping pages
@@ -267,8 +271,11 @@ public class Login extends JFrame {
             if (result.next()) {
                 int userId = result.getInt("user_id");
                 String userName = result.getString("user_name");
-                Session.startUserSession(role, userId, username, userName);
+                currUser = new Session(role, userId, username, userName);
             }
+
+            // pass login info to system controller
+            SystemController.setCurrentUser(currUser);
 
             switch (role) {
                 case "AD":
@@ -287,14 +294,5 @@ public class Login extends JFrame {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new Login();
-            }
-        });
     }
 }
