@@ -31,7 +31,7 @@ public class AdminDashboard extends JFrame {
         mainPanel.add(lblHeader, BorderLayout.NORTH);
 
         // Dashboard Stats + Buttons
-        JPanel centerPanel = new JPanel(new GridLayout(5, 1, 10, 15));
+        JPanel centerPanel = new JPanel(new GridLayout(6, 1, 10, 15));
 
         // Reporting — pulled from database
         JLabel lblTotalPatients = new JLabel("Total Patients Registered: " + getTotalPatients(), SwingConstants.CENTER);
@@ -47,6 +47,9 @@ public class AdminDashboard extends JFrame {
 
         JButton btnViewAppointments = new JButton("View All Appointments");
         btnViewAppointments.setFont(new Font("Dialog", Font.PLAIN, 18));
+
+        JButton btnViewReport = new JButton("View Report");
+        btnManageDoctors.setFont(new Font("Dialog", Font.PLAIN, 18));
 
         // Opens Manage Doctors window
         btnManageDoctors.addActionListener(new ActionListener() {
@@ -72,11 +75,20 @@ public class AdminDashboard extends JFrame {
             }
         });
 
+        // Generate Report
+        btnViewReport.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new ReportFrame().setVisible(true);
+            }
+        });
+
         centerPanel.add(lblTotalPatients);
         centerPanel.add(lblTotalAppointments);
         centerPanel.add(btnManageDoctors);
         centerPanel.add(btnViewDoctors);
         centerPanel.add(btnViewAppointments);
+        centerPanel.add(btnViewReport);
 
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
