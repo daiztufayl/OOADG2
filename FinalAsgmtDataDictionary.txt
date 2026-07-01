@@ -1,0 +1,178 @@
+--Administrator
+CREATE TABLE administrator(
+admin_id SERIAL NOT NULL,
+admin_username VARCHAR(32) UNIQUE NOT NULL,
+admin_password VARCHAR(32) UNIQUE NOT NULL,
+CONSTRAINT alphaNumUser CHECK (admin_username ~ '^[A-Za-z0-9]+$'),
+CONSTRAINT alphaNumPass CHECK (admin_password ~ '^[A-Za-z0-9]+$')
+);
+
+--Category
+CREATE TABLE category(
+category_id SERIAL NOT NULL,
+category_name VARCHAR(32) UNIQUE NOT NULL,
+max_rent_duration INTEGER NOT NULL,
+PRIMARY KEY (category_id),
+CONSTRAINT alphaNumName CHECK (category_name ~ '^[A-Za-z0-9]+( [A-Za-z0-9]+)*$')
+);
+
+--Equipment
+CREATE TABLE equipment(
+equipment_id SERIAL NOT NULL,
+category_id INTEGER NOT NULL,
+equipment_name VARCHAR(32) UNIQUE NOT NULL,
+daily_rental NUMERIC(8,2) NOT NULL,
+num_available INTEGER NOT NULL,
+PRIMARY KEY (equipment_id),
+FOREIGN KEY (category_id) REFERENCES category(category_id),
+CONSTRAINT alphaNumName CHECK (equipment_name ~ '^[A-Za-z0-9]+( [A-Za-z0-9]+)*$')
+);
+
+--Rental
+CREATE TABLE rental(
+rental_id SERIAL NOT NULL,
+equipment_id INTEGER NOT NULL,
+time_start DATE NOT NULL,
+time_end DATE,
+PRIMARY KEY (rental_id),
+FOREIGN KEY (equipment_id) REFERENCES equipment(equipment_id)
+);
+
+--Roles
+CREATE TABLE role(
+role_id SERIAL NOT NULL,
+role_name VARCHAR(2) NOT NULL,
+PRIMARY KEY (role_id)
+);
+
+--Special Pricing
+CREATE TABLE rolePricing(
+pricing_id SERIAL NOT NULL,
+pricing_name VARCHAR(32) NOT NULL,
+pricing_type VARCHAR(2) NOT NULL,
+operator VARCHAR(3) NOT NULL,
+price_adjustment NUMERIC(8,2) NOT NULL,
+PRIMARY KEY (pricing_id),
+CONSTRAINT alphaNumName CHECK (pricing_name ~ '^[A-Za-z0-9]+( [A-Za-z0-9]+)*$'),
+CONSTRAINT typeChk CHECK (pricing_type IN ('DC','PR')),
+CONSTRAINT operatorChk CHECK (operator IN ('SUB','MUL'))
+);
+
+
+--Role Special Pricing
+CREATE TABLE roleAdjustments(
+role INTEGER NOT NULL,
+pricing_id INTEGER NOT NULL,
+PRIMARY KEY (role,pricing_id),
+FOREIGN KEY (role) REFERENCES role(role_id),
+FOREIGN KEY (pricing_id) REFERENCES rolePricing(pricing_id)
+);
+
+--User
+CREATE TABLE sysUser(
+user_id SERIAL NOT NULL,
+user_role INTEGER NOT NULL,
+user_username VARCHAR(32) UNIQUE NOT NULL,
+user_password VARCHAR(32) NOT NULL,
+user_name     TEXT NOT NULL,
+currRental INTEGER,
+PRIMARY KEY (user_id),
+FOREIGN KEY (user_role) REFERENCES role(role_id),
+FOREIGN KEY (currRental) REFERENCES rental(rental_id),
+CONSTRAINT alphaNumUser CHECK (user_username ~ '^[A-Za-z0-9]+$'),
+CONSTRAINT alphaNumPass CHECK (user_password ~ '^[A-Za-z0-9]+$'),
+CONSTRAINT alphaName CHECK (user_name ~ '^[A-Za-z]+( [A-Za-z]+)*$')
+);
+
+--Category Penalties
+CREATE TABLE penaltyPricing(
+penalty_id SERIAL NOT NULL,
+penalty_name VARCHAR(32) NOT NULL,
+operator VARCHAR(3) NOT NULL,
+price_adjustment NUMERIC(8,2) NOT NULL,
+PRIMARY KEY (penalty_id),
+CONSTRAINT alphaNumName CHECK (penalty_name ~ '^[A-Za-z0-9]+( [A-Za-z0-9]+)*$'),
+CONSTRAINT operatorChk CHECK (operator IN ('ADD','MUL'))
+);
+
+--Category Specifics
+CREATE TABLE categoryAdjustments(
+category_id INTEGER NOT NULL,
+penalty_id INTEGER NOT NULL,
+PRIMARY KEY (category_id,penalty_id),
+FOREIGN KEY (category_id) REFERENCES category(category_id),
+FOREIGN KEY (penalty_id) REFERENCES penaltyPricing(penalty_id)
+);
+
+--Triggers
+
+--auto-update number of available equipment when rented
+CREATE OR REPLACE FUNCTION decrement_availability()
+RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE equipment SET num_available = num_available-1 WHERE equipment_id = NEW.equipment_id;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER rentOut AFTER INSERT ON rental FOR EACH ROW EXECUTE FUNCTION decrement_availability();
+
+--auto-update number of available equipment when returned
+CREATE OR REPLACE FUNCTION update_availability()
+RETURNS TRIGGER AS $$
+BEGIN
+	IF NEW.time_end IS DISTINCT FROM OLD.time_end THEN
+		UPDATE equipment SET num_available = num_available+1 WHERE equipment_id =	NEW.equipment_id;
+		UPDATE sysUser SET currRental = NULL WHERE currRental = NEW.rental_id;
+	END IF;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER rentReturn AFTER UPDATE ON rental FOR EACH ROW EXECUTE FUNCTION update_availability();
+
+--Views
+
+--current rentals By User
+CREATE OR REPLACE VIEW currentRentals AS SELECT r.rental_id AS rental_id, r.time_start AS day_rented, u.user_id AS user_id, role.role_name AS role, u.user_name AS name, e.equipment_id AS equipment_id, e.equipment_name AS equipment, c.category_name AS equipment_category, c.max_rent_duration AS max_days_allowed FROM rental AS r JOIN sysUser AS u ON u.currrental = r.rental_id AND u.currrental IS NOT NULL AND r.time_end IS NULL JOIN equipment AS e ON e.equipment_id = r.equipment_id JOIN role ON u.user_role = role.role_id JOIN category AS c ON e.category_id = c.category_id;
+
+--equipment by Category
+CREATE VIEW equipmentInfo AS SELECT c.category_name AS category_name, c.max_rent_duration AS max_days_allowed, e.equipment_id AS equipment_id, e.equipment_name AS equipment, e.daily_rental AS daily_rental_rate, e.num_available AS number_available FROM category AS c JOIN equipment AS e ON e.category_id = c.category_id;
+
+--price adjustments by Role
+CREATE VIEW rolePricingInfo AS SELECT r.role_name AS role, p.pricing_name AS name, p.pricing_type AS type, p.operator AS modifier, p.price_adjustment AS adjustment FROM role as r LEFT JOIN roleAdjustments AS a ON r.role_id = a.role LEFT JOIN rolePricing AS p ON a.pricing_id = p.pricing_id;
+
+--penalties by Category
+CREATE VIEW categoryPenaltyInfo AS SELECT c.category_name as category_name , p.penalty_name as penalty, p.operator AS modifier, p.price_adjustment AS adjustment FROM categoryAdjustments AS a JOIN category AS c ON a.category_id = c.category_id JOIN penaltyPricing as p ON a.penalty_id = p.penalty_id;
+
+--Populate Admins
+INSERT INTO administrator(admin_username,admin_password) VALUES ('nizam1up','Zxcv123'), ('adam2up','Asdf123'), ('tufayl3up','Zxcv456'),('nadirah4up','Asdf456');
+
+--Populate Roles
+INSERT INTO role(role_name) VALUES ('SD'),('LC');
+
+--Insert Student
+INSERT INTO sysUser(user_role,user_username,user_password,user_name) VALUES (1,'mortesa','necrofencer','Darcy Graves');
+
+--Insert Category
+INSERT INTO category(category_name,max_rent_duration) VALUES ('Media Equipment', 7);
+INSERT INTO category(category_name,max_rent_duration) VALUES ('Laboratory Equipment', 2);
+
+--Insert Equipment
+INSERT INTO equipment(category_id, equipment_name, daily_rental, num_available) VALUES (1, 'Canon XA60 4K Camcorder', 20, 5);
+INSERT INTO equipment(category_id, equipment_name, daily_rental, num_available) VALUES (2, 'Bunsen Burner', 5, 50);
+
+--Insert into Price Adjustment
+INSERT INTO rolePricing(pricing_name, pricing_type, operator, price_adjustment) VALUES ('Student Discount', 'DC', 'MUL', '0.80');
+INSERT INTO rolePricing(pricing_name, pricing_type, operator, price_adjustment) VALUES ('Gratuity', 'PR', 'SUB', '5');
+
+--Tie Price Adjustments to Roles
+INSERT INTO roleAdjustments(role,pricing_id) VALUES (1,1),(2,2);
+
+--Insert into Category Penalties
+INSERT INTO penaltyPricing(penalty_name,operator, price_adjustment) VALUES ('Late', 'ADD', 50);
+INSERT INTO penaltyPricing(penalty_name,operator, price_adjustment) VALUES ('Damage', 'MUL', 10);
+INSERT INTO penaltyPricing(penalty_name,operator, price_adjustment) VALUES ('Broken', 'MUL', 120);
+
+--Tie to Categories
+INSERT INTO categoryAdjustments(category_id,penalty_id) VALUES (1,1),(1,2),(1,3),(2,1),(2,3);
