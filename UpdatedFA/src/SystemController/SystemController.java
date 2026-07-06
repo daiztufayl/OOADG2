@@ -9,7 +9,7 @@ public class SystemController {
     private static final String DATABASEURL = "jdbc:postgresql://localhost:5432/smartequip";
     private static final String USERNAME = "postgres"; // idk just use default postgres user should be fine
     private static final String PASSWORD = "admin"; // change to password for the default postgres user 'postgres'
-    // (default postgres password is "":nothing)
+    
     private static Connection conn;
 
     public SystemController() {
