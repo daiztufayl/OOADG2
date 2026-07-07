@@ -330,7 +330,7 @@ public class Login extends JPanel {
         }
     }
 
-    // opens dashboard for student users
+    // opens dashboard for non-admin users
     private void openUserDashboard() {
         Window window = SwingUtilities.getWindowAncestor(Login.this);
 
