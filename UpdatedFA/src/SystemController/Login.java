@@ -299,7 +299,6 @@ public class Login extends JPanel {
                 // pass login info to system controller
                 SystemController.setCurrentUser(currUser);
 
-
                 SwingUtilities.getWindowAncestor(Login.this).dispose(); // send to admin dashboard
                 new AdminDashboard();
 
@@ -323,12 +322,7 @@ public class Login extends JPanel {
                 // pass login info to system controller
                 SystemController.setCurrentUser(currUser);
 
-
-                if (role.equals("SD")) {
-                    openStudentDashboard();
-                } else if (role.equals("LC")) {
-                    openLecturerDashboard();
-                }
+                openUserDashboard();
             }
 
         } catch (SQLException e) {
@@ -337,18 +331,7 @@ public class Login extends JPanel {
     }
 
     // opens dashboard for student users
-    private void openStudentDashboard() {
-        Window window = SwingUtilities.getWindowAncestor(Login.this);
-
-        if (window != null) {
-            window.dispose();
-        }
-
-        new UserDashboard();
-    }
-
-    // opens dashboard for lecturer users
-    private void openLecturerDashboard() {
+    private void openUserDashboard() {
         Window window = SwingUtilities.getWindowAncestor(Login.this);
 
         if (window != null) {
