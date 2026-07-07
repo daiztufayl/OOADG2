@@ -38,39 +38,32 @@ public class Register extends JPanel {
     }
 
     private JPanel registerFormInit() {
-        JPanel wrapper = new JPanel(new GridBagLayout());
-
         JPanel registerForm = new JPanel();
         registerForm.setLayout(new GridBagLayout());
-        registerForm.setPreferredSize(new Dimension(720, 520));
-
         GridBagConstraints constraints = new GridBagConstraints();
 
         // initialise constraints
-        constraints.weightx = 1;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.insets = new Insets(10, 20, 10, 20);
+        constraints.weightx = constraints.weighty = 1; // make components stretchable
+        constraints.fill = GridBagConstraints.BOTH; // stretch components to fit
+        constraints.insets = new Insets(10, 20, 10, 20); // add padding
 
         JPanel roleChoice = roleChoiceInit(); // pick role combo box
 
-        constraints = setGridBag(constraints, 0, 0, 2);
-        registerForm.add(roleChoice, constraints);
+        constraints = setGridBag(constraints, 0, 0);
+        registerForm.add(roleChoice);
 
         RegistrationInfoBox usernameBox = new RegistrationInfoBox("Enter Username:");
         RegistrationInfoBox passwordBox = new RegistrationInfoBox("Enter Password:");
         RegistrationInfoBox confPassBox = new RegistrationInfoBox("Confirm Password:");
         RegistrationInfoBox nameBox = new RegistrationInfoBox("Enter Name:");
 
-        constraints = setGridBag(constraints, 0, 1);
+        constraints = setGridBag(constraints, 1, 0);
         registerForm.add(usernameBox, constraints);
-
-        constraints = setGridBag(constraints, 1, 1);
+        constraints = setGridBag(constraints, 0, 1);
         registerForm.add(passwordBox, constraints);
-
-        constraints = setGridBag(constraints, 0, 2);
+        constraints = setGridBag(constraints, 1, 1);
         registerForm.add(confPassBox, constraints);
-
-        constraints = setGridBag(constraints, 1, 2);
+        constraints = setGridBag(constraints, 0, 2, 2);
         registerForm.add(nameBox, constraints);
 
         class RegisterListener implements ActionListener {
@@ -103,7 +96,7 @@ public class Register extends JPanel {
 
                     clearStoredUserFields();
 
-                } else if (!password.equals(confPass)) { // check if passwords match
+                } else if (!password.matches(confPass)) { // check if passwords match
 
                     JOptionPane.showMessageDialog(null,
                             "Registration Failed: Passwords do not match.",
@@ -126,23 +119,19 @@ public class Register extends JPanel {
         }
 
         JButton registerButton = new JButton("Confirm"); // button to confirm registration (and go back to landing if
-        // successful)
+                                                         // successful)
         registerButton.addActionListener(new RegisterListener());
-        registerButton.setFont(new Font("Dialog", Font.PLAIN, 28)); // make font size bigger
-
-        JButton cancelButton = new JButton("Cancel"); // button to cancel registration (go back to landing)
-        cancelButton.addActionListener(new CancelListener());
-        cancelButton.setFont(new Font("Dialog", Font.PLAIN, 28)); // make font size bigger
-
+        registerButton.setFont(new Font("Dialog", Font.PLAIN, 32)); // make font size bigger
         constraints = setGridBag(constraints, 0, 3);
         registerForm.add(registerButton, constraints);
 
+        JButton cancelButton = new JButton("Cancel"); // button to cancel registration (go back to landing)
+        cancelButton.addActionListener(new CancelListener());
+        cancelButton.setFont(new Font("Dialog", Font.PLAIN, 32)); // make font size bigger
         constraints = setGridBag(constraints, 1, 3);
         registerForm.add(cancelButton, constraints);
 
-        wrapper.add(registerForm);
-
-        return wrapper;
+        return registerForm;
     }
 
     private GridBagConstraints setGridBag(GridBagConstraints c, int x, int y) { // set position for next component added
@@ -153,8 +142,8 @@ public class Register extends JPanel {
     }
 
     private GridBagConstraints setGridBag(GridBagConstraints c, int x, int y, int w) { // set position for next
-        // component added + num of grids
-        // wide
+                                                                                       // component added + num of grids
+                                                                                       // wide
         c.gridx = x;
         c.gridy = y;
         c.gridwidth = w;
@@ -163,35 +152,18 @@ public class Register extends JPanel {
 
     private JPanel roleChoiceInit() {
         ArrayList<String> roleList = RoleLookup.getRoleList(); // get list of roles
+        String[] roleArray = roleList.subList(1, roleList.size()).toArray(new String[0]); // convert to array for use in
+                                                                                          // combobox
+        // take sublist from 1 to ignore Admin since you cant register as admin
 
         JPanel roleChoice = new JPanel(new BorderLayout()); // panel to hold label and combo box for selecting role
         JLabel roleChoiceLabel = new JLabel("Select Role:");
-        JComboBox<RoleChoiceItem> roleChoiceBox = new JComboBox<>();
-
-        // convert database role codes into readable display text
-        // SD will be shown as Student
-        // LC will be shown as Lecturer
-        for (int i = 1; i < roleList.size(); i++) { // start from 1 to ignore Admin
-            String roleCode = roleList.get(i);
-
-            if (roleCode.equals("SD")) {
-                roleChoiceBox.addItem(new RoleChoiceItem("SD", "Student"));
-            } else if (roleCode.equals("LC")) {
-                roleChoiceBox.addItem(new RoleChoiceItem("LC", "Lecturer"));
-            } else {
-                roleChoiceBox.addItem(new RoleChoiceItem(roleCode, roleCode));
-            }
-        }
-
-        if (roleChoiceBox.getItemCount() > 0) {
-            roleChoiceBox.setSelectedIndex(0);
-            role = roleChoiceBox.getItemAt(0).getCode(); // store SD/LC, not Student/Lecturer
-        }
+        JComboBox<String> roleChoiceBox = new JComboBox<>(roleArray);
 
         roleChoiceBox.addActionListener(new RoleChoiceListener());
 
-        roleChoiceLabel.setFont(new Font("Dialog", Font.PLAIN, 28));
-        roleChoiceBox.setFont(new Font("Dialog", Font.PLAIN, 28));
+        roleChoiceLabel.setFont(new Font("Dialog", Font.PLAIN, 32));
+        roleChoiceBox.setFont(new Font("Dialog", Font.PLAIN, 32));
 
         roleChoice.add(roleChoiceLabel, BorderLayout.NORTH);
         roleChoice.add(roleChoiceBox, BorderLayout.CENTER);
@@ -206,11 +178,10 @@ public class Register extends JPanel {
 
             JPanel regInfoBox = new JPanel(new BorderLayout()); // panel to hold label and box for entering info
             JLabel regInfoLabel = new JLabel(labelName); // separate label cuz otherwise you gotta empty the box
-            regInfoLabel.setFont(new Font("Dialog", Font.PLAIN, 28)); // make font size bigger
+            regInfoLabel.setFont(new Font("Dialog", Font.PLAIN, 32)); // make font size bigger
 
             enterRegInfo = new JTextField(); // box to enter info
-            enterRegInfo.setFont(new Font("Dialog", Font.PLAIN, 28)); // make font size bigger
-            enterRegInfo.setPreferredSize(new Dimension(300, 45));
+            enterRegInfo.setFont(new Font("Dialog", Font.PLAIN, 32)); // make font size bigger
 
             regInfoBox.add(regInfoLabel, BorderLayout.NORTH); // places label at top
             regInfoBox.add(enterRegInfo, BorderLayout.CENTER); // box to enter info takes rest of space
@@ -259,37 +230,25 @@ public class Register extends JPanel {
 
             registerStatement.execute();
 
-            JOptionPane.showMessageDialog(null,
-                    "Registration successful. Please login.",
-                    "Registration Success", JOptionPane.INFORMATION_MESSAGE);
-
             clearStoredUserFields();
             Landing.redirectLanding();
 
         } catch (SQLException e) {
             e.printStackTrace();
-
-            JOptionPane.showMessageDialog(null,
-                    "Registration failed: " + e.getMessage(),
-                    "Registration Attempt Failed", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     // clear stored data: invoked after failed registration or returning to landing
     // page
     private void clearStoredUserFields() {
-        username = password = confPass = name = null;
+        role = username = password = confPass = name = null;
     }
 
     // role choice and return to landing page listeners respectively
     class RoleChoiceListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             JComboBox<?> retrieveRoleChoice = (JComboBox<?>) e.getSource();
-            RoleChoiceItem selectedRole = (RoleChoiceItem) retrieveRoleChoice.getSelectedItem();
-
-            if (selectedRole != null) {
-                role = selectedRole.getCode(); // stores SD/LC for database
-            }
+            role = (String) retrieveRoleChoice.getSelectedItem();
         }
     }
 
@@ -297,24 +256,6 @@ public class Register extends JPanel {
         public void actionPerformed(ActionEvent e) {
             clearStoredUserFields();
             Landing.redirectLanding();
-        }
-    }
-
-    private static class RoleChoiceItem {
-        private String code;
-        private String displayName;
-
-        public RoleChoiceItem(String code, String displayName) {
-            this.code = code;
-            this.displayName = displayName;
-        }
-
-        public String getCode() {
-            return code;
-        }
-
-        public String toString() {
-            return displayName;
         }
     }
 }
