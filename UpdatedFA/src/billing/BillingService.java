@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-// Handles bill calculation rules.
+// Handles bill calculation rules
 public class BillingService {
     private final BillingRepository repository;
 

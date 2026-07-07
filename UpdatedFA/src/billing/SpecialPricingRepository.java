@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-// SRP: database work for special pricing stays here.
+// Database work for special pricing
 public class SpecialPricingRepository {
     private final Connection conn;
 

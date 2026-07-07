@@ -3,7 +3,7 @@ package billing;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-// Encapsulation: rental data needed by billing stays in one object.
+// Rental data needed by billing, encapsulated
 public class RentalBillingData {
     private final int rentalId;
     private final int categoryId;
