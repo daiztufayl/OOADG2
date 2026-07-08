@@ -36,6 +36,7 @@ public class RentalManagement extends JPanel {
     private JButton refreshButton;
     private JButton clearButton;
 
+    // Set up the database connection and billing service
     public RentalManagement() {
 
         conn = SystemController.getDBConnection();
@@ -57,6 +58,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Create the title of the page
     private JPanel titlePanel() {
 
         JPanel panel = new JPanel(new BorderLayout());
@@ -75,6 +77,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Create the rental form
     private JPanel formPanel() {
 
         JPanel panel = new JPanel(new GridLayout(11, 1, 5, 10));
@@ -114,6 +117,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Create the table to show rental information
     private JScrollPane tablePanel() {
 
         String[] columns = {
@@ -142,6 +146,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Load all available equipment from the database
     private void loadEquipment() {
 
         equipmentBox.removeAllItems();
@@ -184,6 +189,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Load the user's current rental
     private void loadRentalCombo() {
 
         rentalBox.removeAllItems();
@@ -235,6 +241,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Load the list of equipment conditions
     private void loadConditionPenalties() {
 
         conditionBox.removeAllItems();
@@ -277,6 +284,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Show the current rental in the table
     private void loadRentalTable() {
 
         tableModel.setRowCount(0);
@@ -330,6 +338,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Check if the user already has a rental
     private boolean hasActiveRental(int userId) {
 
         String sql =
@@ -367,6 +376,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Rent the selected equipment
     private void rentEquipment() {
 
         EquipmentItem equipment = (EquipmentItem) equipmentBox.getSelectedItem();
@@ -435,6 +445,7 @@ public class RentalManagement extends JPanel {
 
             ps2.close();
 
+            // Save the rental information
             conn.commit();
             conn.setAutoCommit(oldAutoCommit);
 
@@ -461,6 +472,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Return the selected equipment
     private void returnEquipment() {
 
         RentalItem rental = (RentalItem) rentalBox.getSelectedItem();
@@ -486,7 +498,7 @@ public class RentalManagement extends JPanel {
 
         try {
 
-            // calculate the bill before clearing current rental
+            // Calculate the rental bill
             bill = billingService.calculateCurrentBill(current.getUserID(), penaltyId);
 
             if (bill == null) {
@@ -525,6 +537,7 @@ public class RentalManagement extends JPanel {
             oldAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
 
+            // Update the return date
             String updateRental =
                     "UPDATE rental " +
                             "SET time_end = CURRENT_DATE " +
@@ -542,6 +555,7 @@ public class RentalManagement extends JPanel {
                 throw new Exception("Rental already returned or not found.");
             }
 
+            // Remove the rental from the user's account
             String updateUser =
                     "UPDATE sysuser " +
                             "SET currrental = NULL " +
@@ -555,6 +569,7 @@ public class RentalManagement extends JPanel {
 
             ps2.close();
 
+            // Save the rental information
             conn.commit();
             conn.setAutoCommit(oldAutoCommit);
 
@@ -583,6 +598,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Refresh the latest rental information
     private void refreshData() {
 
         clearForm();
@@ -593,6 +609,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Clear all selections
     private void clearForm() {
 
         if (equipmentBox.getItemCount() > 0)
@@ -608,6 +625,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Show the bill in a pop-up window
     private void showBillDialog(Bill bill) {
 
         JTextArea billArea = new JTextArea(formatBill(bill));
@@ -627,6 +645,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Format the bill details
     private String formatBill(Bill bill) {
 
         StringBuilder text = new StringBuilder();
@@ -665,6 +684,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Change the font size of all components
     private void setFontForPanel(Container container, int size) {
 
         for (Component component : container.getComponents()) {
@@ -679,6 +699,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Store equipment information
     private static class EquipmentItem {
 
         private int id;
@@ -706,6 +727,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Store rental information
     private static class RentalItem {
 
         private int id;
@@ -733,6 +755,7 @@ public class RentalManagement extends JPanel {
 
     }
 
+    // Store equipment condition
     private static class ConditionItem {
 
         private Integer penaltyId;
